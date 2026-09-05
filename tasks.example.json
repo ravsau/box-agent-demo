@@ -1,0 +1,16 @@
+[
+  {
+    "repo": "YOUR_USER/box-agent-demo",
+    "base": "main",
+    "name": "troubleshooting",
+    "prompt": "Read README.md, fleet.py and worker.py. Create TROUBLESHOOTING.md explaining how to inspect a failed worker, correct a task, launch again, and clean up. Use only behavior supported by the code. Do not edit other files.",
+    "verify": "test -s TROUBLESHOOTING.md && git diff --check"
+  },
+  {
+    "repo": "YOUR_USER/box-agent-demo",
+    "base": "main",
+    "name": "architecture",
+    "prompt": "Read README.md, fleet.py and worker.py. Create ARCHITECTURE.md with a Mermaid sequence diagram of launch, remote work, verification, branch push, optional status checks, and cleanup. Explain which steps need the laptop online. Use only behavior supported by the code. Do not edit other files.",
+    "verify": "test -s ARCHITECTURE.md && git diff --check"
+  }
+]
