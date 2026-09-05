@@ -7,6 +7,10 @@ Your laptop launches the workers. Each Box clones your repo, runs OpenCode, chec
 the changes, and pushes a separate branch. You decide whether to open a PR.
 The sample tasks add useful documentation to your fork of this repo.
 
+The optional `controller/` directory is a portable adaptation of the recording dashboard
+used to explain the workflow. It reads the same task and run-state files as `fleet.py`.
+It does not contain the filmed task fleet, private run artifacts, or automatic PR creation.
+
 ## Try it
 
 You need Python, the GitHub CLI, an Upstash Box account, and an OpenRouter API key.
@@ -48,10 +52,29 @@ Preview the launch without calling any API:
 python fleet.py launch tasks.local.json --model openrouter/PROVIDER/MODEL
 ```
 
+You can run the controller's equivalent offline readiness check and dashboard:
+
+```bash
+python controller/controller.py check tasks.local.json --model openrouter/PROVIDER/MODEL
+python controller/controller.py serve tasks.local.json --model openrouter/PROVIDER/MODEL
+```
+
+The dashboard listens on `127.0.0.1` and serves only its fixed UI assets and
+`/api/state`. It never launches work. The instructions shown in the UI name the tasks
+loaded from your file and show the same terminal command the controller uses.
+
 Replace `PROVIDER/MODEL` with your chosen model ID. When ready to spend on the run:
 
 ```bash
 python fleet.py launch tasks.local.json --model openrouter/PROVIDER/MODEL --run
+```
+
+The controller also requires the explicit `--run` flag before it passes a launch to
+`fleet.py`:
+
+```bash
+python controller/controller.py launch tasks.local.json \
+  --model openrouter/PROVIDER/MODEL --run
 ```
 
 The launcher prints a state file path such as `runs/abc123.json`. Keep it.
@@ -67,6 +90,21 @@ Use the actual state path printed by your launch:
 ```bash
 python fleet.py status runs/abc123.json
 ```
+
+To show safe live status in the local dashboard, pass the state file and opt into
+read-only remote checks:
+
+```bash
+python controller/controller.py serve tasks.local.json \
+  --model openrouter/PROVIDER/MODEL \
+  --state runs/abc123.json --monitor
+```
+
+The monitor reads only the worker's structured result and process liveness. It does not
+put worker logs or remote error text into the UI. A missing receipt is `unknown`; a worker
+that exceeds the monitor window is `timed out`; `failed` is reserved for a structured
+failure receipt. A returned branch is still waiting for human review. Fetch it, inspect
+the diff, and create a pull request only if you want to propose the change.
 
 Status checks are optional. A `pushed` result means the configured check succeeded and
 a branch was pushed. Read the diff yourself before submitting it.
